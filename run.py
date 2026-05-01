@@ -5,9 +5,6 @@ from ml_code import visualization
 from ml_code import transformations
 from ml_code.utils import collate_fn_list, arg_reader
 
-
-
-
 if __name__ == "__main__":
     vals = arg_reader() 
     #----------------------------------------------------
@@ -40,10 +37,10 @@ if __name__ == "__main__":
     # Paths of labels and images
     #----------------------------------------------------
 
-    train_img ="data/test_data/images/train"
-    train_labels ="data/test_data/labels/train"
-    val_img = "data/test_data/images/val"
-    val_labels = "data/test_data/labels/val"
+    train_img ="data/yolo/images/train"
+    train_labels ="data/yolo/labels/train"
+    val_img = "data/yolo/images/val"
+    val_labels = "data/yolo/labels/val"
     
     # TODO: FIGURE OUT HOW TO GET DATA TO EX3 CLUSTER
 
@@ -79,7 +76,7 @@ if __name__ == "__main__":
     #   POSSIBLE INFERENCE
     #----------------------------------------------------
 
-    #TODO : DECIDE IF INFERENCE SHOULD BE HERE OR IN A DIFFERENT .py FILE
+    #TODO : DECIDE IF INFERENCE SHOULD BE HERE OR IN A DIFFERENT .py FILE # DONE
     if vals.inference:
         from ultralytics import YOLO
         import os
