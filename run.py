@@ -80,3 +80,23 @@ if __name__ == "__main__":
     #----------------------------------------------------
 
     #TODO : DECIDE IF INFERENCE SHOULD BE HERE OR IN A DIFFERENT .py FILE
+    if vals.inference:
+        from ultralytics import YOLO
+        import os
+        yolo = YOLO("runs/custom/ultralytics_best_custom.pt")
+        yolo.model.eval()
+        
+        directory = 'data/test_data/images/test'
+        save_dir = "runs/custom_yolov8n/inference_examples"
+
+        visualization.plot_history(history, "runs/custom_yolov8n")
+        
+        for filename in os.listdir(directory):
+            f = os.path.join(directory, filename)
+            save = os.path.join(save_dir, filename)
+            if os.path.isfile(f):
+                visualization.infer_and_visualize(yolo, f, save_path = save)
+    
+        evaluate.evaluate(yolo, "data/data.yaml")
+
+    

@@ -38,6 +38,13 @@ def arg_reader():
         help="Mini‑batch size (default: 32)."
     )
 
+    parser.add_argument(
+        "--inference",
+        type=bool,
+        default=True,
+        help="Decide if inference should be ran on the current model (default: True)"
+    )
+
     # 3️⃣ Parse the command line (any order works)
     args = parser.parse_args()
 

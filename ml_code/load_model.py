@@ -1,5 +1,7 @@
 import torch
+import torch.nn as nn
 from types import SimpleNamespace
+from ultralytics.nn.modules.head import Detect
 from .loss_func_pt import ne_IoU_DetectionLoss
 
 def load_model(weights_path: str, device: torch.device =torch.device("cuda" if torch.cuda.is_available() else "cpu")):
@@ -10,6 +12,9 @@ def load_model(weights_path: str, device: torch.device =torch.device("cuda" if t
     # ── Option A: Ultralytics YOLOv8 ──────────────────────
     from ultralytics import YOLO
     yolo  = YOLO(weights_path)
+
+    yolo = modify_yolo(yolo)
+    
     model = yolo.model          # underlying nn.Module
 
     # ── 1. Fix model.args FIRST ────────────────────────────────────────
@@ -47,4 +52,34 @@ def load_model(weights_path: str, device: torch.device =torch.device("cuda" if t
     # model.load_state_dict(torch.load(weights_path, map_location=device))
     # model = model.to(device)
 
-    return model
+    return model, yolo 
+
+
+def modify_yolo(model, new_nc=11, class_names={0: "Pedestrian", 1: "People", 2: "Bicycle", 3: "Car", 4: "Van", 5: "Truck", 6: "Tricycle", 7: "Awning-tricycle", 8: "Bus", 9: "Motor", 10: "Other"}):
+    """Modify in-place and return the YOLO wrapper, not just the bare model."""
+    yolo = model
+    detect = yolo.model.model[-1]
+
+    # Swap classification heads
+    detect.nc = new_nc
+    detect.no = new_nc + detect.reg_max * 4
+
+    for i in range(len(detect.cv3)):
+        old_conv = detect.cv3[i][-1]
+        detect.cv3[i][-1] = nn.Conv2d(
+            old_conv.in_channels, new_nc,
+            kernel_size=1, stride=1, padding=0,
+        )
+        #nn.init.kaiming_normal_(detect.cv3[i][-1].weight, nonlinearity="relu")
+        #nn.init.zeros_(detect.cv3[i][-1].bias)
+        detect.bias_init()
+    # Update bookkeeping on the DetectionModel
+    if class_names is None:
+        class_names = {i: f"class_{i}" for i in range(new_nc)}
+    yolo.model.nc = new_nc
+    yolo.model.names = class_names
+
+    # Update the YOLO wrapper's overrides so val() knows the task/nc
+    yolo.overrides["nc"] = new_nc
+
+    return yolo  # <-- return the FULL wrapper

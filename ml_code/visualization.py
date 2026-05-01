@@ -125,8 +125,8 @@ def plot_history(history, save_dir="runs/custom_yolov8n", show=True):
     fig.savefig(path, dpi=150, bbox_inches="tight")
     print(f"  📊 Plot saved → {path}")
 
-    if show:
-        plt.show()
+    #if show:
+     #   plt.show()
 
     plt.close(fig)
     return path
@@ -345,8 +345,8 @@ def visualize_detections(
         fig.savefig(save_path, dpi=150, bbox_inches="tight")
         print(f"  🖼️  Saved → {save_path}")
 
-    if show:
-        plt.show()
+    #if show:
+     #   plt.show()
 
     plt.close(fig)
 

@@ -4,7 +4,7 @@ from .build_optimizer import build_optimizer
 from .build_scheduler import build_scheduler
 from .train_one_epoch import train_one_epoch
 from .validate import validate
-from .save_checkpoint import save_checkpoint
+from .save_checkpoint import save_checkpoint, save_ultralytics_ckpt
 from .freeze_unfreeze import freeze_backbone, unfreeze_all
 from.load_model import load_model
 
@@ -21,7 +21,7 @@ CFG = {
 
 def train(train_loader, val_loader, cfg=CFG):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model  = load_model(cfg["weights"], device)
+    model, yolo  = load_model(cfg["weights"], device)
     # ── Freeze backbone initially ──────────────────────────
     if cfg["freeze_backbone"]:
         freeze_backbone(model)
@@ -85,17 +85,26 @@ def train(train_loader, val_loader, cfg=CFG):
         )
 
         # ── Save best ──────────────────────────────────────
+        #if val_m["val_loss"] < best_val_loss:
+        #    best_val_loss  = val_m["val_loss"]
+        #    patience_count = 0
+        #    path = save_checkpoint(
+        #        model, optimizer, scheduler, epoch, metrics, cfg["save_dir"], "best"
+        #    )
+        #    print(f"  ✅ New best → val_loss={best_val_loss:.4f}  saved: {path}")
+        #else:
+        #    patience_count += 1
+        #    print(f"  ⏳ No improvement ({patience_count}/{cfg['patience']})")
+
         if val_m["val_loss"] < best_val_loss:
             best_val_loss  = val_m["val_loss"]
             patience_count = 0
-            path = save_checkpoint(
-                model, optimizer, scheduler, epoch, metrics, cfg["save_dir"], "best"
-            )
+            path = save_ultralytics_ckpt(
+                yolo, cfg["save_dir"])
             print(f"  ✅ New best → val_loss={best_val_loss:.4f}  saved: {path}")
         else:
             patience_count += 1
             print(f"  ⏳ No improvement ({patience_count}/{cfg['patience']})")
-
         # ── Early stopping ─────────────────────────────────
         if patience_count >= cfg["patience"]:
             print(f"\n  🛑 Early stopping triggered at epoch {epoch}")
